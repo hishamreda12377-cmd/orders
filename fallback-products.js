@@ -1,0 +1,702 @@
+var FALLBACK_PRODUCTS = [
+  {
+    "id": 625,
+    "name": "فولية",
+    "price": 20,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D9%81%D9%88%D9%84%D9%8A%D8%A9.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 626,
+    "name": "سمسمية",
+    "price": 30,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D8%B3%D9%85%D8%B3%D9%85%D9%8A%D8%A9.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 627,
+    "name": "حمصية",
+    "price": 40,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D8%AD%D9%85%D8%B5%D9%8A%D8%A9.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 628,
+    "name": "فول شيكولاته",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D9%81%D9%88%D9%84%20%D8%B4%D9%8A%D9%83%D9%88%D9%84%D8%A7%D8%AA%D9%87.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 629,
+    "name": "فول لبناني",
+    "price": 60,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D9%81%D9%88%D9%84%20%D9%84%D8%A8%D9%86%D8%A7%D9%86%D9%8A.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 630,
+    "name": "شيكوبون",
+    "price": 60,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D8%B4%D9%8A%D9%83%D9%88%D8%A8%D9%88%D9%86.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 631,
+    "name": "دومية",
+    "price": 40,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D8%AF%D9%88%D9%85%D9%8A%D8%A9.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 632,
+    "name": "نوجا",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D9%86%D9%88%D8%AC%D8%A7.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 633,
+    "name": "جوزهند مانجا",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D8%AC%D9%88%D8%B2%D9%87%D9%86%D8%AF%20%D9%85%D8%A7%D9%86%D8%AC%D8%A7.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 634,
+    "name": "ملبن ابيض",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D9%85%D9%84%D8%A8%D9%86%20%D8%A7%D8%A8%D9%8A%D8%B6.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 635,
+    "name": "ملبن جيلي",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D9%85%D9%84%D8%A8%D9%86%20%D8%AC%D9%8A%D9%84%D9%8A.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 636,
+    "name": "فندام",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D9%81%D9%86%D8%AF%D8%A7%D9%85.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 637,
+    "name": "عسلية جردل",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D8%B9%D8%B3%D9%84%D9%8A%D8%A9%20%D8%AC%D8%B1%D8%AF%D9%84.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 638,
+    "name": "عسلية علب",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D8%B9%D8%B3%D9%84%D9%8A%D8%A9%20%D8%B9%D9%84%D8%A8.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 639,
+    "name": "بسبوسة",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D8%A8%D8%B3%D8%A8%D9%88%D8%B3%D8%A9.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 640,
+    "name": "كنافة",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D9%83%D9%86%D8%A7%D9%81%D8%A9.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 641,
+    "name": "بلح الشام",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D8%A8%D9%84%D8%AD%20%D8%A7%D9%84%D8%B4%D8%A7%D9%85.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 642,
+    "name": "جلاش",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://github.com/hishamreda12377-cmd/sharkawey.store/blob/main/images/%D8%AC%D9%84%D8%A7%D8%B4.png?raw=true",
+    "description": "",
+    "category": "اصيل",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 643,
+    "name": "اسكوتش منت 3ج.م",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/اسكوتش كيس.png",
+    "description": "",
+    "category": "جامي",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 644,
+    "name": "اسكوتش منت 5ج.م",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/اسكوتش كيس.png",
+    "description": "",
+    "category": "جامي",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 645,
+    "name": "بسكويت باولا 2 ج.م",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/باولا.png",
+    "description": "",
+    "category": "جامي",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 646,
+    "name": "جيلي جامي 5 ج.م",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/جامي كيس.png",
+    "description": "",
+    "category": "جامي",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 647,
+    "name": "جيلي جامي 10 ج.م",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/جامي كيس.png",
+    "description": "",
+    "category": "جامي",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 648,
+    "name": "جيلي جامي 20 ج.م",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/جامي كيس.png",
+    "description": "",
+    "category": "جامي",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 649,
+    "name": "شوكو كراميل",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/شوكو.png",
+    "description": "",
+    "category": "جامي",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 650,
+    "name": "لبان اسكوتش",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "",
+    "description": "",
+    "category": "جامي",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 651,
+    "name": "مصاصة ساور",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/م ساور.png",
+    "description": "",
+    "category": "جامي",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 652,
+    "name": "بنبون كولا",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/كولا.png",
+    "description": "",
+    "category": "سما",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 653,
+    "name": "بنبون قهوة",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/قهوة.png",
+    "description": "",
+    "category": "سما",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 654,
+    "name": "بنبون زبده",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/زبده.png",
+    "description": "",
+    "category": "سما",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 655,
+    "name": "بنبون ساور",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/ساور.png",
+    "description": "",
+    "category": "سما",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 656,
+    "name": "بنبون فواكه",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/فواكه.png",
+    "description": "",
+    "category": "سما",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 657,
+    "name": "بنبون منت نعناع",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/نعناع.png",
+    "description": "",
+    "category": "سما",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 658,
+    "name": "سمارة جامبو",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://thf.bing.com/th/id/OIP.ptv3t-9sN3gFFTYVLg_gXgHaFG?w=259&h=180&c=7&r=0&o=7&cb=thfc1falcon&pid=1.7&rm=3",
+    "description": "",
+    "category": "لبان",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 659,
+    "name": "هارت جم",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://m.media-amazon.com/images/I/41dJSLdH58L._AC_UL800_QL65_.jpg",
+    "description": "",
+    "category": "لبان",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 660,
+    "name": "ساور مستر شوك",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/شوك.png",
+    "description": "",
+    "category": "لبان",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 661,
+    "name": "مودي نعناع",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/مودي ن.png",
+    "description": "",
+    "category": "لبان",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 662,
+    "name": "مودي فراولة",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/مودي ف.png",
+    "description": "",
+    "category": "لبان",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 663,
+    "name": "لبان برجر",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/برجر.png",
+    "description": "",
+    "category": "لبان",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 664,
+    "name": "لبان الكبير",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/الكبير.png",
+    "description": "",
+    "category": "لبان",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 665,
+    "name": "لبان رودانو",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/رودانو.png",
+    "description": "",
+    "category": "لبان",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 666,
+    "name": "قلم روتو",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://riad.ly/app/uploads/2023/11/photo_1_2023-11-20_00-11-11-1024x1024.jpg",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 667,
+    "name": "قلم بريما سولو",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://eg.jumia.is/unsafe/fit-in/300x300/filters:fill(white)/product/34/381091/1.jpg?6766",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 668,
+    "name": "قلم بريما سيفين",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/سيفين.png",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 669,
+    "name": "قلم بريجو",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://cdn.mafrservices.com/sys-master-root/h1b/h9b/50537775366174/617434_main.jpg?im=Resize=480",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 670,
+    "name": "HP قلم رصاص",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 671,
+    "name": "قلم روتو ماركر",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/ماركر.png",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 672,
+    "name": "AAA حجارة ريموت",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/حجارة ص.png",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 673,
+    "name": "AA حجارة قلم",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/حجارة ص.png",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 674,
+    "name": "امير الاصلي",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/امير.png",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 675,
+    "name": "امير صاروخ",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://www.epobond.com/cdn/shop/products/SUPERGLUE_JPG.png?v=1675515325&width=990",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 676,
+    "name": "شمع لحام ماليزي",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://m.media-amazon.com/images/I/71YV35NLguL._AC_SL1500_.jpg",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 677,
+    "name": "لحام امير 2*1",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/امير 2.png",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 678,
+    "name": "قصافات امريكي ك",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/قصافات ك.png",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 679,
+    "name": "قصافات امريكي ص",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 680,
+    "name": "كاتل ستانليس 1.8 لتر",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/كاتل س.png",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 681,
+    "name": "ماكينة قهوة 600وات",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://www.coffeetalks.co.uk/cdn/shop/products/OK004-K_Main_c2932b00-335b-40f9-b857-fffcf83bc744.jpg?v=1727431190",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 682,
+    "name": "ص signal معجون",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/معجون.png",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 683,
+    "name": "المصل الذهبي",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://tse2.mm.bing.net/th/id/OIP.MFYyIKtIom41GKCi3hMzLQHaJ4?rs=1&pid=ImgDetMain&o=7&rm=3",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 684,
+    "name": "فرش اسنان اورال",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 685,
+    "name": "جيل ستار برطمان",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://azizonline.com/wp-content/uploads/2025/06/1749910294_3501.png",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 686,
+    "name": "فازلين بيور 50مل",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://puremasr.com/wp-content/uploads/2022/04/Vaseline-4.jpg",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 687,
+    "name": "بودره قدم 50جم",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "https://drahmedelezaby.com/wp-content/uploads/2023/05/Eva-Foot-Powder-Deodorant-with-Menthol-50-gm-2-430x430.webp",
+    "description": "",
+    "category": "خردوات",
+    "created_at": "2026-07-02T23:25:22.239774+00:00"
+  },
+  {
+    "id": 688,
+    "name": "ساور داملا 10 ج.م",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/ساور داملا10.png",
+    "description": "",
+    "category": "مارشملو",
+    "created_at": "2026-07-02T23:30:32.326314+00:00"
+  },
+  {
+    "id": 689,
+    "name": "ساور داملا متر 5 ج.م",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/ساور متر 5.png",
+    "description": "",
+    "category": "مارشملو",
+    "created_at": "2026-07-02T23:30:32.963385+00:00"
+  },
+  {
+    "id": 690,
+    "name": "مارشملو سوسيس",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": " ",
+    "description": "",
+    "category": "مارشملو",
+    "created_at": "2026-07-02T23:30:33.111271+00:00"
+  },
+  {
+    "id": 691,
+    "name": "مارشملو ايس كريم",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/ايس كريم.png",
+    "description": "",
+    "category": "مارشملو",
+    "created_at": "2026-07-02T23:30:33.24423+00:00"
+  },
+  {
+    "id": 692,
+    "name": "شيكولاته سبريد اشكال",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/شيكولاته سايحة.png",
+    "description": "",
+    "category": "مارشملو",
+    "created_at": "2026-07-02T23:30:33.390022+00:00"
+  },
+  {
+    "id": 693,
+    "name": "مارشملو جيلي ساور",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": "images/مارشملو جيلي.png",
+    "description": "",
+    "category": "مارشملو",
+    "created_at": "2026-07-02T23:30:33.547393+00:00"
+  },
+  {
+    "id": 694,
+    "name": "مارشملو نودلز",
+    "price": 50,
+    "pack": "العلبة 24 قطعة",
+    "images": " ",
+    "description": "",
+    "category": "مارشملو",
+    "created_at": "2026-07-02T23:30:33.675557+00:00"
+  }
+];
