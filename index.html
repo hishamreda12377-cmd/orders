@@ -836,7 +836,8 @@
         .product-modal-footer .p-delete-modal:hover { background: #d32f2f; }
 
         .dynamic-fields-wrap { display: flex; flex-direction: column; gap: 8px; }
-        .dynamic-field-row { display: flex; align-items: center; gap: 8px; }
+        .dynamic-field-row { display: flex; flex-direction: column; gap: 6px; }
+        .dynamic-field-row .field-top { display: flex; align-items: center; gap: 8px; }
         .dynamic-field-row input { order: 0; }
         .add-field-btn, .remove-field-btn { order: 1; }
         .dynamic-field-row input {
@@ -846,6 +847,10 @@
         }
         .dynamic-field-row input:focus { border-color: #ff9800; box-shadow: 0 0 0 3px rgba(255,152,0,0.1); }
         .dynamic-field-row input::placeholder { direction: rtl; text-align: right; color: #475569; }
+        .dynamic-field-row .p-image-css-input {
+            font-family: monospace; font-size: 11px; direction: ltr; text-align: left;
+            padding: 8px 14px; font-size: 11px;
+        }
         .add-field-btn {
             width: 38px; height: 38px; min-width: 38px; border-radius: 10px;
             border: 2px dashed #ff9800; background: rgba(255, 152, 0, 0.08);
@@ -1045,6 +1050,7 @@
                 <button class="import-btn" onclick="document.getElementById('file-input').click()">📂 رفع ملف HTML</button>
                 <input type="file" id="file-input" accept=".html" style="display:none" onchange="importFromFile(this)">
                 <button class="add-product-btn" onclick="downloadHTML()" style="background:#00897b;">⬇️ تحميل ملف HTML</button>
+                <button class="add-product-btn" onclick="fixBrokenImages()" style="background:#ff6f00;">🖼️ إصلاح الصور</button>
             </div>
             <div id="products-container" class="products-grid"><div class="loading">جاري تحميل المنتجات...</div></div>
         </div>
@@ -1100,8 +1106,11 @@
             <label>الصور</label>
             <div id="p-images-wrap" class="dynamic-fields-wrap">
                 <div class="dynamic-field-row">
-                    <input type="text" class="p-image-input" placeholder="رابط الصورة الأولى">
-                    <button type="button" class="add-field-btn" onclick="addImageField()">+</button>
+                    <div class="field-top">
+                        <input type="text" class="p-image-input" placeholder="رابط الصورة الأولى">
+                        <button type="button" class="add-field-btn" onclick="addImageField()">+</button>
+                    </div>
+                    <input type="text" class="p-image-css-input" placeholder="CSS مخصص لهذه الصورة في الشاشة الكاملة (اختياري)">
                 </div>
             </div>
             <div id="p-image-preview" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"></div>
@@ -1540,7 +1549,9 @@
         function rebuildFieldRow(wrap, isLast) {
             const rows = wrap.querySelectorAll('.dynamic-field-row');
             rows.forEach((row, i) => {
-                let btn = row.querySelector('.add-field-btn, .remove-field-btn');
+                const fieldTop = row.querySelector('.field-top');
+                const target = fieldTop || row;
+                let btn = target.querySelector('.add-field-btn, .remove-field-btn');
                 if (btn) btn.remove();
                 if (isLast && i === rows.length - 1) {
                     const addBtn = document.createElement('button');
@@ -1548,14 +1559,14 @@
                     addBtn.className = 'add-field-btn';
                     addBtn.textContent = '+';
                     addBtn.onclick = wrap.id === 'p-images-wrap' ? addImageField : addFlavorField;
-                    row.appendChild(addBtn);
+                    target.appendChild(addBtn);
                 } else if (!isLast || rows.length > 1) {
                     const rmBtn = document.createElement('button');
                     rmBtn.type = 'button';
                     rmBtn.className = 'remove-field-btn';
                     rmBtn.textContent = '−';
                     rmBtn.onclick = function() { row.remove(); rebuildFieldRow(wrap, true); updateImagePreview(); };
-                    row.appendChild(rmBtn);
+                    target.appendChild(rmBtn);
                 }
             });
         }
@@ -1564,10 +1575,10 @@
             const wrap = document.getElementById('p-images-wrap');
             const row = document.createElement('div');
             row.className = 'dynamic-field-row';
-            row.innerHTML = '<input type="text" class="p-image-input" placeholder="رابط الصورة التالية">';
+            row.innerHTML = '<div class="field-top"><input type="text" class="p-image-input" placeholder="رابط الصورة التالية"><button type="button" class="add-field-btn" onclick="addImageField()">+</button></div><input type="text" class="p-image-css-input" placeholder="CSS مخصص لهذه الصورة في الشاشة الكاملة (اختياري)">';
             wrap.appendChild(row);
             rebuildFieldRow(wrap, true);
-            row.querySelector('input').focus();
+            row.querySelector('.p-image-input').focus();
         }
 
         function addFlavorField() {
@@ -1581,21 +1592,30 @@
         }
 
         function getImagesValues() {
-            return [...document.querySelectorAll('.p-image-input')].map(i => i.value.trim()).filter(Boolean).join(',');
+            const images = [...document.querySelectorAll('.p-image-input')].map(i => i.value.trim()).filter(Boolean);
+            const css = [...document.querySelectorAll('.p-image-css-input')].map(i => i.value.trim());
+            const cssFiltered = css.slice(0, images.length);
+            return { images: images.join(','), css: cssFiltered.join(',') };
         }
 
         function getFlavorsValues() {
             return [...document.querySelectorAll('.p-flavor-input')].map(i => i.value.trim()).filter(Boolean).join(',');
         }
 
-        function setDynamicFields(wrapId, inputClass, csvValue) {
+        function setDynamicFields(wrapId, inputClass, csvValue, csvValue2) {
             const wrap = document.getElementById(wrapId);
             wrap.innerHTML = '';
             const values = csvValue ? csvValue.split(',').map(s => s.trim()).filter(Boolean) : [''];
+            const values2 = csvValue2 ? csvValue2.split(',').map(s => s.trim()) : [];
             values.forEach((v, i) => {
                 const row = document.createElement('div');
                 row.className = 'dynamic-field-row';
-                row.innerHTML = `<input type="text" class="${inputClass}" placeholder="${inputClass === 'p-image-input' ? 'رابط الصورة' : 'اسم الطعم'}" value="${v.replace(/"/g, '&quot;')}">`;
+                if (inputClass === 'p-image-input') {
+                    const cssVal = (values2[i] || '').replace(/"/g, '&quot;');
+                    row.innerHTML = `<div class="field-top"><input type="text" class="p-image-input" placeholder="رابط الصورة" value="${v.replace(/"/g, '&quot;')}"><button type="button" class="add-field-btn" onclick="addImageField()">+</button></div><input type="text" class="p-image-css-input" placeholder="CSS مخصص لهذه الصورة في الشاشة الكاملة (اختياري)" value="${cssVal}">`;
+                } else {
+                    row.innerHTML = `<input type="text" class="${inputClass}" placeholder="اسم الطعم" value="${v.replace(/"/g, '&quot;')}">`;
+                }
                 wrap.appendChild(row);
             });
             rebuildFieldRow(wrap, true);
@@ -1623,7 +1643,7 @@
                 document.getElementById('p-price').value = p.price;
                 document.getElementById('p-pack').value = p.pack || 'العلبة 24 قطعة';
                 document.getElementById('p-desc').value = p.description || '';
-                setDynamicFields('p-images-wrap', 'p-image-input', p.images || '');
+                setDynamicFields('p-images-wrap', 'p-image-input', p.images || '', p.image_custom_css || '');
                 document.getElementById('p-category').value = p.category || '';
                 setDynamicFields('p-flavors-wrap', 'p-flavor-input', p.flavors || '');
                 document.getElementById('p-css').value = p.custom_css || '';
@@ -1651,8 +1671,8 @@
 
         function updateImagePreview() {
             const container = document.getElementById('p-image-preview');
-            const csv = getImagesValues();
-            const urls = csv ? csv.split(',').map(s => s.trim()).filter(Boolean) : [];
+            const imgData = getImagesValues();
+            const urls = imgData.images ? imgData.images.split(',').map(s => s.trim()).filter(Boolean) : [];
             container.innerHTML = urls.slice(0, 3).map(url =>
                 url.startsWith('http://') || url.startsWith('https://')
                     ? `<img src="${url}" style="width:54px;height:54px;object-fit:cover;border-radius:6px;border:1px solid #333;" onerror="this.style.display='none'">`
@@ -1670,7 +1690,9 @@
             const price = parseFloat(document.getElementById('p-price').value);
             const pack = document.getElementById('p-pack').value.trim();
             const description = document.getElementById('p-desc').value.trim();
-            const images = getImagesValues();
+            const imgData = getImagesValues();
+            const images = imgData.images;
+            const image_custom_css = imgData.css;
             const category = document.getElementById('p-category').value;
             const flavors = getFlavorsValues();
             const custom_css = document.getElementById('p-css').value.trim();
@@ -1678,7 +1700,7 @@
 
             if (!name || isNaN(price)) { alert('⚠️ اسم المنتج والسعر مطلوبان'); return; }
 
-            const data = { name, price, pack, description, images, category, flavors, custom_css, modal_custom_css };
+            const data = { name, price, pack, description, images, category, flavors, custom_css, modal_custom_css, image_custom_css };
 
             if (!id && category) {
                 const sameCategory = allProducts.filter(p => p.category === category);
@@ -1818,6 +1840,68 @@
 
         // ==================== DOWNLOAD HTML ====================
 
+        // ==================== FIX BROKEN IMAGES ====================
+
+        const LOCAL_IMAGES = {
+            'اسكوتش كيس': 'اسكوتش كيس.png', 'الاصيل لوجو': 'الاصيل لوجو.png', 'الكبير': 'الكبير.png',
+            'امير 2': 'امير 2.png', 'امير': 'امير.png', 'ايس كريم': 'ايس كريم.png',
+            'باولا': 'باولا.png', 'برجر': 'برجر.png', 'بسبوسة': 'بسبوسة.png',
+            'بلح الشام': 'بلح الشام.png', 'بيكو كولا': 'بيكو كولا.png', 'بيلا': 'بيلا.png',
+            'تاتو': 'تاتو.png', 'جامي كيس': 'جامي كيس.png', 'جلاش': 'جلاش.png',
+            'جوزهند مانجا': 'جوزهند مانجا.png', 'حجارة ص': 'حجارة ص.png', 'حجارة ك': 'حجارة ك.png',
+            'حمصية': 'حمصية.png', 'دودي': 'دودي.png', 'دومية': 'دومية.png',
+            'دينو': 'دينو.png', 'رودانو': 'رودانو.png', 'زبده': 'زبده.png',
+            'ساور داملا10': 'ساور داملا10.png', 'ساور متر 5': 'ساور متر 5.png', 'ساور': 'ساور.png',
+            'سبينر': 'سبينر.png', 'سلاكه': 'سلاكه.png', 'سمسمية': 'سمسمية.png',
+            'سندريلا': 'سندريلا.png', 'سوسيس': 'سوسيس.png', 'سيفين': 'سيفين.png',
+            'سيمبا': 'سيمبا.png', 'شوك': 'شوك.png', 'شوكو': 'شوكو.png',
+            'شيكوبون': 'شيكوبون.png', 'شيكولاته سايحة': 'شيكولاته سايحة.png',
+            'عسلية جردل': 'عسلية جردل.png', 'عسلية علب': 'عسلية علب.png',
+            'فرش اورال': 'فرش اورال.png', 'فلاور': 'فلاور.png', 'فندام': 'فندام.png',
+            'فواكه': 'فواكه.png', 'فول شيكولاته': 'فول شيكولاته.png', 'فول لبناني': 'فول لبناني.png',
+            'فولية': 'فولية.png', 'قصافات ك': 'قصافات ك.png', 'قهوة': 'قهوة.png',
+            'كاتل س': 'كاتل س.png', 'كاندي لوجو': 'كاندي لوجو.png', 'كنافة': 'كنافة.png',
+            'كولا': 'كولا.png', 'م ساور': 'م ساور.png', 'مارشملو جيلي': 'مارشملو جيلي.png',
+            'ماركر': 'ماركر.png', 'ماكس': 'ماكس.png', 'مضيئة': 'مضيئة.png',
+            'معجون': 'معجون.png', 'ملبن ابيض': 'ملبن ابيض.png', 'ملبن جيلي': 'ملبن جيلي.png',
+            'منت': 'منت.png', 'مودي ف': 'مودي ف.png', 'مودي ن': 'مودي ن.png',
+            'نعناع': 'نعناع.png', 'نوجا': 'نوجا.png', 'نودلز': 'نودلز.png'
+        };
+
+        async function fixBrokenImages() {
+            if (!confirm('🖼️ هيدّث الصور لكل المنتجات. متأكد؟')) return;
+            const container = document.getElementById('products-container');
+            container.innerHTML = '<div class="loading">جاري إصلاح الصور...</div>';
+
+            const { data: products, error } = await supabaseClient.from('products').select('id, name, images');
+            if (error) { container.innerHTML = '<div class="error">❌ ' + error.message + '</div>'; return; }
+
+            let updated = 0;
+            for (const p of products) {
+                const images = p.images ? p.images.split(',').map(s => s.trim()).filter(s => s) : [];
+                if (!images.length) continue;
+
+                const newImages = images.map(img => {
+                    if (img.startsWith('images/')) return img;
+                    for (const [name, file] of Object.entries(LOCAL_IMAGES)) {
+                        if (p.name.includes(name) || img.includes(name)) {
+                            return 'images/' + file;
+                        }
+                    }
+                    return img;
+                });
+
+                const newStr = newImages.join(', ');
+                if (newStr !== p.images) {
+                    await supabaseClient.from('products').update({ images: newStr }).eq('id', p.id);
+                    updated++;
+                }
+            }
+
+            alert('✅ تم إصلاح ' + updated + ' منتج');
+            loadProducts();
+        }
+
         async function downloadHTML() {
             const btn = event.target;
             btn.disabled = true;
@@ -1863,8 +1947,10 @@
                         const flavorsStr = JSON.stringify(flavors);
                         const cssStyle = p.custom_css ? ` style="${p.custom_css.replace(/"/g, '&quot;')}"` : '';
                         const modalCssAttr = p.modal_custom_css ? `"${p.modal_custom_css.replace(/"/g, '&quot;')}"` : 'undefined';
+                        const imageCssArr = p.image_custom_css ? p.image_custom_css.split(',').map(s => s.trim()) : [];
+                        const imageCssStr = JSON.stringify(imageCssArr);
                         productsHTML += `<article class="a1">`;
-                        productsHTML += `<img src="${firstImage}" class="product-image"${cssStyle} onclick='openProductModal("${safeName}", "${p.price} ج.م", ${imagesStr}, "${desc}", "${pack}", ${flavorsStr}, ${modalCssAttr})' width="230" height="200">`;
+                        productsHTML += `<img src="${firstImage}" class="product-image"${cssStyle} onclick='openProductModal("${safeName}", "${p.price} ج.م", ${imagesStr}, "${desc}", "${pack}", ${flavorsStr}, ${modalCssAttr}, ${imageCssStr})' width="230" height="200">`;
                         productsHTML += `<p>${p.name}</p>`;
                         productsHTML += `<button class="order-button" onclick="addToCart('${safeName}', ${p.price})">🛒اضف الي السلة</button>`;
                         productsHTML += `</article>`;
@@ -1902,8 +1988,8 @@ function copyNumber(id){let el=document.getElementById(id);if(el){navigator.clip
 function lockScroll(){document.body.style.overflow='hidden';document.documentElement.style.overflow='hidden'}
 function unlockScroll(){document.body.style.overflow='';document.documentElement.style.overflow=''}
 let currentProduct={},currentProductImages=[],currentImageIndex=0,wasFromCart=false;
-function openProductModal(name,price,images,desc,pack,flavors,customCss){currentProductImages=Array.isArray(images)?images:[images];document.getElementById('modal-name').innerText=name;document.getElementById('modal-price').innerText=price;document.getElementById('modal-pack').innerText=pack||'العلبة 24 قطعة';let descEl=document.getElementById('modal-desc');if(desc&&desc.trim()){descEl.innerHTML='<strong>وصف المنتج:</strong> '+desc;descEl.style.display='block'}else{descEl.style.display='none';descEl.innerHTML=''}let fw=document.getElementById('modal-flavors'),fs=document.getElementById('modal-flavor-select');if(flavors&&flavors.length>0){fs.innerHTML=flavors.map(f=>'<option value="'+f+'">'+f+'</option>').join('');fw.style.display='block'}else{fw.style.display='none';fs.innerHTML=''}let img=document.getElementById('modal-image');img.removeAttribute('style');if(customCss)img.style.cssText=customCss;img.style.opacity='0';img.style.transform='scale(0.95)';setTimeout(()=>{img.src=currentProductImages[0];img.style.opacity='1';img.style.transform='scale(1)';if(customCss)img.style.cssText=customCss+';opacity:1;transform:scale(1)'},50);currentImageIndex=0;let dots=document.getElementById('slider-dots');dots.innerHTML='';currentProductImages.forEach((_,i)=>{let d=document.createElement('span');d.className=i===0?'dot active':'dot';d.onclick=()=>changeImage(i);dots.appendChild(d)});currentProduct={name:name,price:price,image:currentProductImages[0],customCss:customCss||''};preloadImages(currentProductImages);wasFromCart=document.body.classList.contains('cart-modal-open');if(wasFromCart){document.getElementById('cart-modal')?.close();document.body.classList.remove('cart-modal-open')}let o=document.getElementById('product-overlay');o.classList.add('show');lockScroll();window.history.pushState({modalOpen:true},'')}
-function changeImage(i){if(i===currentImageIndex)return;let img=document.getElementById('modal-image');img.style.opacity='0';img.style.transform='scale(0.92)';setTimeout(()=>{currentImageIndex=i;img.src=currentProductImages[i];img.style.opacity='1';img.style.transform='scale(1)';if(currentProduct.customCss)img.style.cssText=currentProduct.customCss+';opacity:1;transform:scale(1)'},180);document.querySelectorAll('.dot').forEach((d,j)=>d.classList.toggle('active',j===i))}
+function openProductModal(name,price,images,desc,pack,flavors,customCss,imageCssArr){currentProductImages=Array.isArray(images)?images:[images];let perImageCss=Array.isArray(imageCssArr)?imageCssArr:[];document.getElementById('modal-name').innerText=name;document.getElementById('modal-price').innerText=price;document.getElementById('modal-pack').innerText=pack||'العلبة 24 قطعة';let descEl=document.getElementById('modal-desc');if(desc&&desc.trim()){descEl.innerHTML='<strong>وصف المنتج:</strong> '+desc;descEl.style.display='block'}else{descEl.style.display='none';descEl.innerHTML=''}let fw=document.getElementById('modal-flavors'),fs=document.getElementById('modal-flavor-select');if(flavors&&flavors.length>0){fs.innerHTML=flavors.map(f=>'<option value="'+f+'">'+f+'</option>').join('');fw.style.display='block'}else{fw.style.display='none';fs.innerHTML=''}let img=document.getElementById('modal-image');img.removeAttribute('style');let firstCss=perImageCss[0]||customCss||'';if(firstCss)img.style.cssText=firstCss;img.style.opacity='0';img.style.transform='scale(0.95)';setTimeout(()=>{img.src=currentProductImages[0];img.style.opacity='1';img.style.transform='scale(1)';if(firstCss)img.style.cssText=firstCss+';opacity:1;transform:scale(1)'},50);currentImageIndex=0;let dots=document.getElementById('slider-dots');dots.innerHTML='';currentProductImages.forEach((_,i)=>{let d=document.createElement('span');d.className=i===0?'dot active':'dot';d.onclick=()=>changeImage(i);dots.appendChild(d)});currentProduct={name:name,price:price,image:currentProductImages[0],customCss:customCss||'',perImageCss:perImageCss};preloadImages(currentProductImages);wasFromCart=document.body.classList.contains('cart-modal-open');if(wasFromCart){document.getElementById('cart-modal')?.close();document.body.classList.remove('cart-modal-open')}let o=document.getElementById('product-overlay');o.classList.add('show');lockScroll();window.history.pushState({modalOpen:true},'')}
+function changeImage(i){if(i===currentImageIndex)return;let img=document.getElementById('modal-image');img.style.opacity='0';img.style.transform='scale(0.92)';setTimeout(()=>{currentImageIndex=i;img.src=currentProductImages[i];let imgCss=(currentProduct.perImageCss&&currentProduct.perImageCss[i])||currentProduct.customCss||'';img.removeAttribute('style');if(imgCss)img.style.cssText=imgCss;img.style.opacity='1';img.style.transform='scale(1)'},180);document.querySelectorAll('.dot').forEach((d,j)=>d.classList.toggle('active',j===i))}
 function closeProductModal(){document.getElementById('product-overlay').classList.remove('show');unlockScroll();if(wasFromCart){wasFromCart=false;document.getElementById('cart-modal')?.showModal();document.body.classList.add('cart-modal-open')}}
 function addToCartFromModal(){let fs=document.getElementById('modal-flavor-select'),fw=document.getElementById('modal-flavors');let f=(fw.style.display!=='none'&&fs.value)?fs.value:'';addToCart(currentProduct.name,currentProduct.price,currentProduct.image,f);closeProductModal()}
 function openProductFromCard(name){document.querySelectorAll('.a1').forEach(card=>{let p=card.querySelector('p');if(p&&p.innerText.trim()===name){let img=card.querySelector('img'),price='',images='',desc='',pack='',flavors=[],customCss='';if(img){let oc=img.getAttribute('onclick')||'';let m=oc.match(/openProductModal\\s*\\([^)]+\\)/);if(m){try{let a=m[0].replace(/^openProductModal\\s*\\(\\s*/,'').replace(/\\s*\\)\\s*$/,'');let parts=splitArgs(a);if(parts.length>=3)images=parseArrayArg(parts[2]);if(parts.length>=4)desc=parts[3].replace(/^['"]|['"]$/g,'');if(parts.length>=6)pack=parts[5].replace(/^['"]|['"]$/g,'');if(parts.length>=7)flavors=parseArrayArg(parts[6]);if(parts.length>=8)customCss=parts[7].replace(/^['"]|['"]$/g,'')}catch(e){}}if(!images)images=img.src;desc=desc||'وصف غير متوفر'}let btn=card.querySelector('.order-button');if(btn){let m2=btn.getAttribute('onclick')?.match(/addToCart\\('[^']*',\\s*(\\d+)\\)/);if(m2)price=m2[1]+' ج.م'}openProductModal(name,price||'0 ج.م',images,desc,pack,flavors,customCss)}})}
