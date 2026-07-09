@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html { scroll-behavior: smooth; }
@@ -1049,8 +1050,11 @@
                 <button class="add-product-btn" onclick="cancelReorder()" id="reorder-cancel-btn" style="background:#757575;display:none;">↩️ إلغاء</button>
                 <button class="import-btn" onclick="document.getElementById('file-input').click()">📂 رفع ملف HTML</button>
                 <input type="file" id="file-input" accept=".html" style="display:none" onchange="importFromFile(this)">
+                <button class="add-product-btn" onclick="document.getElementById('excel-input').click()" style="background:#2e7d32;">📊 استيراد Excel</button>
+                <input type="file" id="excel-input" accept=".xlsx,.xls" style="display:none" onchange="importFromExcel(this)">
                 <button class="add-product-btn" onclick="downloadHTML()" style="background:#00897b;">⬇️ تحميل ملف HTML</button>
                 <button class="add-product-btn" onclick="fixBrokenImages()" style="background:#ff6f00;">🖼️ إصلاح الصور</button>
+                <button class="import-btn" id="show-hidden-btn" onclick="toggleShowHidden()" style="background:rgba(244,67,54,0.15);color:#f44336;border-color:rgba(244,67,54,0.3);">👁️ إظهار المخفي</button>
             </div>
             <div id="products-container" class="products-grid"><div class="loading">جاري تحميل المنتجات...</div></div>
         </div>
@@ -1124,6 +1128,16 @@
                     <input type="text" class="p-flavor-input" placeholder="مثال: فراولة">
                     <button type="button" class="add-field-btn" onclick="addFlavorField()">+</button>
                 </div>
+            </div>
+            <div style="display:flex;gap:16px;margin-top:16px;padding:14px;background:rgba(255,255,255,0.03);border-radius:12px;border:1px solid rgba(255,255,255,0.06);">
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0;flex:1;">
+                    <span style="font-size:13px;color:#e2e8f0;font-weight:600;">👁️ ظاهر للموقع</span>
+                    <input type="checkbox" id="p-visible" checked style="width:18px;height:18px;accent-color:#ff9800;cursor:pointer;">
+                </label>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;margin:0;flex:1;">
+                    <span style="font-size:13px;color:#e2e8f0;font-weight:600;">📦 متوفر</span>
+                    <input type="checkbox" id="p-available" checked style="width:18px;height:18px;accent-color:#4caf50;cursor:pointer;">
+                </label>
             </div>
             <label>CSS مخصص لصورة الكارت (اختياري)</label>
             <textarea id="p-css" rows="3" placeholder="مثال: border-radius: 30px; box-shadow: 0 0 20px rgba(255,0,0,0.5);" style="font-family:monospace;font-size:12px;direction:ltr;text-align:left;"></textarea>
@@ -1416,6 +1430,7 @@
 
         let reorderMode = false;
         let originalOrder = [];
+        let showHidden = false;
 
         async function loadProducts() {
             const container = document.getElementById('products-container');
@@ -1432,7 +1447,8 @@
             allProducts = data || [];
             originalOrder = allProducts.map(p => ({ id: p.id, sort_order: p.sort_order }));
             setBadge('badge-products', allProducts.length);
-            renderProducts(allProducts);
+            const filteredProducts = showHidden ? allProducts : allProducts.filter(p => p.visible !== false);
+            renderProducts(filteredProducts);
         }
 
         function renderProducts(products) {
@@ -1471,18 +1487,37 @@
                             <button onclick="moveProduct(${p.id}, 'down')" ${i === catProducts.length - 1 ? 'disabled' : ''}>▼</button>
                         </div>` : '';
                     const statsBtn = !reorderMode ? `<button class="p-stats-btn" onclick="event.stopPropagation();openSalesStats(${p.id},'${p.name.replace(/'/g, "\\'")}')">📊</button>` : '';
+                    const isVisible = p.visible !== false;
+                    const isAvailable = p.available !== false;
                     html += `
-                        <div class="product-card ${reorderMode ? 'reorder-active' : ''}" onclick="${reorderMode ? '' : 'openProductModal('+p.id+')'}">
+                        <div class="product-card ${reorderMode ? 'reorder-active' : ''}" onclick="${reorderMode ? '' : 'openProductModal('+p.id+')'}" style="${!isVisible ? 'opacity:0.5;' : ''}">
                             ${statsBtn}
+                            <div style="position:absolute;top:6px;right:6px;display:flex;gap:4px;z-index:5;flex-wrap:wrap;max-width:70px;direction:ltr;">
+                                <button onclick="event.stopPropagation();toggleProductVisibility(${p.id}, ${!isVisible})" style="background:${isVisible ? 'rgba(76,175,80,0.15)' : 'rgba(244,67,54,0.15)'};border:1px solid ${isVisible ? 'rgba(76,175,80,0.3)' : 'rgba(244,67,54,0.3)'};color:${isVisible ? '#4caf50' : '#f44336'};width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;" title="${isVisible ? 'إخفاء' : 'إظهار'}">${isVisible ? '👁️' : '🚫'}</button>
+                                <button onclick="event.stopPropagation();toggleProductAvailability(${p.id}, ${!isAvailable})" style="background:${isAvailable ? 'rgba(76,175,80,0.15)' : 'rgba(255,152,0,0.15)'};border:1px solid ${isAvailable ? 'rgba(76,175,80,0.3)' : 'rgba(255,152,0,0.3)'};color:${isAvailable ? '#4caf50' : '#ff9800'};width:28px;height:28px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;" title="${isAvailable ? 'تعطيل' : 'تفعيل'}">${isAvailable ? '✅' : '❌'}</button>
+                            </div>
                             ${hasValidImg ? `<img src="${img}" onerror="this.style.display='none'">` : '<div style="height:130px;display:flex;align-items:center;justify-content:center;color:#555;font-size:36px;">📦</div>'}
                             <div class="p-name">${p.name}</div>
                             <div class="p-price">${p.price} ج.م</div>
+                            ${!isAvailable ? '<div style="font-size:10px;color:#ff9800;font-weight:700;padding:2px 8px;background:rgba(255,152,0,0.12);border-radius:4px;margin-top:2px;">غير متوفر</div>' : ''}
+                            ${!isVisible ? '<div style="font-size:10px;color:#f44336;font-weight:700;padding:2px 8px;background:rgba(244,67,54,0.12);border-radius:4px;margin-top:2px;">مخفي</div>' : ''}
                             ${arrows}
                         </div>`;
                 });
                 html += `</div></div>`;
             }
             container.innerHTML = html;
+        }
+
+        function toggleShowHidden() {
+            showHidden = !showHidden;
+            const btn = document.getElementById('show-hidden-btn');
+            btn.textContent = showHidden ? '👁️ إخفاء المخفي' : '👁️ إظهار المخفي';
+            btn.style.background = showHidden ? 'rgba(76,175,80,0.15)' : 'rgba(244,67,54,0.15)';
+            btn.style.color = showHidden ? '#4caf50' : '#f44336';
+            btn.style.borderColor = showHidden ? 'rgba(76,175,80,0.3)' : 'rgba(244,67,54,0.3)';
+            const filteredProducts = showHidden ? allProducts : allProducts.filter(p => p.visible !== false);
+            renderProducts(filteredProducts);
         }
 
         function toggleReorderMode() {
@@ -1535,8 +1570,9 @@
 
         function filterProducts() {
             const q = document.getElementById('search-input').value.trim().toLowerCase();
-            if (!q) { renderProducts(allProducts); return; }
-            const filtered = allProducts.filter(p =>
+            const base = showHidden ? allProducts : allProducts.filter(p => p.visible !== false);
+            if (!q) { renderProducts(base); return; }
+            const filtered = base.filter(p =>
                 p.name.toLowerCase().includes(q) ||
                 (p.category || '').toLowerCase().includes(q) ||
                 String(p.price).includes(q)
@@ -1648,12 +1684,16 @@
                 setDynamicFields('p-flavors-wrap', 'p-flavor-input', p.flavors || '');
                 document.getElementById('p-css').value = p.custom_css || '';
                 document.getElementById('p-modal-css').value = p.modal_custom_css || '';
+                document.getElementById('p-visible').checked = p.visible !== false;
+                document.getElementById('p-available').checked = p.available !== false;
                 updateImagePreview();
                 deleteBtn.style.display = 'block';
             } else {
                 title.textContent = 'إضافة منتج';
                 ['p-id','p-name','p-price','p-pack','p-css','p-modal-css','p-desc'].forEach(id => document.getElementById(id).value = '');
                 document.getElementById('p-category').value = '';
+                document.getElementById('p-visible').checked = true;
+                document.getElementById('p-available').checked = true;
                 setDynamicFields('p-images-wrap', 'p-image-input', '');
                 setDynamicFields('p-flavors-wrap', 'p-flavor-input', '');
                 document.getElementById('p-pack').value = 'العلبة 24 قطعة';
@@ -1697,10 +1737,12 @@
             const flavors = getFlavorsValues();
             const custom_css = document.getElementById('p-css').value.trim();
             const modal_custom_css = document.getElementById('p-modal-css').value.trim();
+            const visible = document.getElementById('p-visible').checked;
+            const available = document.getElementById('p-available').checked;
 
             if (!name || isNaN(price)) { alert('⚠️ اسم المنتج والسعر مطلوبان'); return; }
 
-            const data = { name, price, pack, description, images, category, flavors, custom_css, modal_custom_css, image_custom_css };
+            const data = { name, price, pack, description, images, category, flavors, custom_css, modal_custom_css, image_custom_css, visible, available };
 
             if (!id && category) {
                 const sameCategory = allProducts.filter(p => p.category === category);
@@ -1723,6 +1765,20 @@
             closeProductModal();
             await loadProducts();
             alert('✅ تم الحفظ بنجاح');
+        }
+
+        async function toggleProductVisibility(id, newState) {
+            await supabaseClient.from('products').update({ visible: newState }).eq('id', id);
+            const p = allProducts.find(x => x.id === id);
+            if (p) p.visible = newState;
+            renderProducts(allProducts);
+        }
+
+        async function toggleProductAvailability(id, newState) {
+            await supabaseClient.from('products').update({ available: newState }).eq('id', id);
+            const p = allProducts.find(x => x.id === id);
+            if (p) p.available = newState;
+            renderProducts(allProducts);
         }
 
         async function deleteProductById(id) {
@@ -1834,6 +1890,66 @@
                 loadProducts();
             } catch (e) {
                 container.innerHTML = '<div class="error">❌ فشل: ' + e.message + '</div>';
+            }
+            input.value = '';
+        }
+
+        // ==================== EXCEL IMPORT ====================
+
+        async function importFromExcel(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const container = document.getElementById('products-container');
+            container.innerHTML = '<div class="loading">جاري استيراد المنتجات من Excel...</div>';
+
+            try {
+                const data = await file.arrayBuffer();
+                const workbook = XLSX.read(data, { type: 'array' });
+                const sheet = workbook.Sheets[workbook.SheetNames[0]];
+                const rows = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+
+                if (!rows.length) { container.innerHTML = '<div class="error">❌ الملف فارغ</div>'; return; }
+
+                const products = [];
+                const errors = [];
+
+                for (let i = 0; i < rows.length; i++) {
+                    const row = rows[i];
+                    const name = (row['الاسم'] || row['اسم المنتج'] || row['name'] || row['Name'] || '').toString().trim();
+                    const price = parseFloat(row['السعر'] || row['price'] || row['Price'] || 0);
+                    const category = (row['التصنيف'] || row['category'] || row['Category'] || '').toString().trim();
+                    const pack = (row['العبوة'] || row['pack'] || row['Pack'] || 'العلبة 24 قطعة').toString().trim();
+                    const images = (row['الصور'] || row['images'] || row['Images'] || '').toString().trim();
+                    const description = (row['الوصف'] || row['description'] || row['Description'] || '').toString().trim();
+                    const flavors = (row['النكهات'] || row['flavors'] || row['Flavors'] || '').toString().trim();
+                    const visible = row['ظاهر'] === false || row['visible'] === false || row['Visible'] === false ? false : true;
+                    const available = row['متوفر'] === false || row['available'] === false || row['Available'] === false ? false : true;
+
+                    if (!name) { errors.push(`الصف ${i + 2}: اسم المنتج مطلوب`); continue; }
+                    if (!price || isNaN(price) || price <= 0) { errors.push(`الصف ${i + 2} (${name}): السعر غير صحيح`); continue; }
+
+                    products.push({ name, price, category, pack, images, description, flavors, visible, available });
+                }
+
+                if (!products.length) {
+                    container.innerHTML = `<div class="error">❌ لم يتم العثور على منتجات صالحة${errors.length ? '<br>' + errors.slice(0, 3).join('<br>') : ''}</div>`;
+                    return;
+                }
+
+                let imported = 0;
+                for (const p of products) {
+                    const { error } = await supabaseClient.from('products').insert([p]);
+                    if (!error) imported++;
+                }
+
+                const msg = `✅ تم استيراد ${imported} من ${products.length} منتج بنجاح`;
+                if (errors.length) alert(msg + `\n⚠️ ${errors.length} أخطاء:\n` + errors.slice(0, 5).join('\n'));
+                else alert(msg);
+
+                await loadProducts();
+
+            } catch (e) {
+                container.innerHTML = '<div class="error">❌ فشل استيراد Excel: ' + e.message + '</div>';
             }
             input.value = '';
         }
