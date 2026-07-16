@@ -1120,7 +1120,7 @@
             <div id="p-image-preview" style="display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;"></div>
             <label>التصنيف</label>
             <select id="p-category">
-                <option value="">بدون تصنيف</option>
+                <option value="">-- اختر تصنيف --</option>
             </select>
             <label>الأطعمة / الأنواع (اختياري)</label>
             <div id="p-flavors-wrap" class="dynamic-fields-wrap">
@@ -1457,7 +1457,7 @@
 
             const categories = {};
             products.forEach(p => {
-                const cat = p.category || 'بدون تصنيف';
+                const cat = p.category || '';
                 if (!categories[cat]) categories[cat] = [];
                 categories[cat].push(p);
             });
@@ -1665,8 +1665,9 @@
             // Populate category dropdown
             const catSelect = document.getElementById('p-category');
             const currentCat = catSelect.value;
-            catSelect.innerHTML = '<option value="">بدون تصنيف</option>';
-            allCategories.forEach(c => {
+            catSelect.innerHTML = '<option value="">-- اختر تصنيف --</option>';
+            const uniqueCategories = [...new Map(allCategories.map(c => [c.name, c])).values()];
+            uniqueCategories.forEach(c => {
                 catSelect.innerHTML += `<option value="${c.name}">${c.name}</option>`;
             });
 
@@ -1744,10 +1745,18 @@
 
             const data = { name, price, pack, description, images, category, flavors, custom_css, modal_custom_css, image_custom_css, visible, available };
 
-            if (!id && category) {
+            if (id) {
+                const existingProduct = allProducts.find(p => p.id === parseInt(id));
+                if (existingProduct) {
+                    if (!category) data.category = existingProduct.category;
+                    if (data.category === existingProduct.category) {
+                        data.sort_order = existingProduct.sort_order;
+                    }
+                }
+            } else if (category) {
                 const sameCategory = allProducts.filter(p => p.category === category);
                 data.sort_order = sameCategory.length > 0 ? Math.max(...sameCategory.map(p => p.sort_order ?? 0)) + 1 : 0;
-            } else if (!id) {
+            } else {
                 data.sort_order = allProducts.length;
             }
 
@@ -2040,7 +2049,7 @@
 
                 const grouped = {};
                 products.forEach(p => {
-                    const cat = p.category || 'بدون تصنيف';
+const cat = p.category || '';
                     if (!grouped[cat]) grouped[cat] = [];
                     grouped[cat].push(p);
                 });
